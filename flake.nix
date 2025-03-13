@@ -27,9 +27,13 @@
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    lix-module = {
+      url = "https://git.lix.systems/lix-project/nixos-module/archive/2.92.0.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, disko } @inputs:
+  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, disko, lix-module } @inputs:
     let
       user = "prestonharrell";
       linuxSystems = [ "x86_64-linux" "aarch64-linux" ];
@@ -96,6 +100,7 @@
                 autoMigrate = true;
               };
             }
+          lix-module.nixosModules.default
             ./hosts/darwin
           ];
         }
@@ -113,6 +118,7 @@
               users.${user} = import ./modules/nixos/home-manager.nix;
             };
           }
+          lix-module.nixosModules.default
           ./hosts/nixos
         ];
      });

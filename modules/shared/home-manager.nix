@@ -28,6 +28,8 @@ let name = "pbharrell";
 
       export BROWSER='/Applications/Firefox.app/Contents/MacOS/firefox'
       alias dr="darwin-rebuild switch --flake ~/nix"
+      alias nr="prev=$cwd && cd ~/nixos-config && nix run .#build-switch && cd $prev"
+      alias ne="nvim ~/nixos-config"
 
       export CLICOLOR=1
       export TERM=xterm-256color 
@@ -151,8 +153,29 @@ let name = "pbharrell";
       bind l select-pane -R
 
       # Floating window bindings
-      bind -n C-\\ run-shell ~/.scripts/popuptmux.sh
-      bind g display-popup -d "#{pane_current_path}" -xC -yC -w92% -h92% -E "lazygit"
+      # bind g display-popup -d "#{pane_current_path}" -xC -yC -w92% -h92% -E "lazygit"
+
+      bind g run-shell '
+        if [ "$(tmux display-message -p -F "#{session_name}")" = "popup" ];then 
+          return
+        elif [ "$(tmux display-message -p -F "#{session_name}")" = "lazygit" ];then
+          tmux switch -l
+        else
+          tmux switch -t lazygit || (tmux new -d -s lazygit -c "#{pane_current_path}" "tmux set-option status off; lazygit" && tmux switch -t lazygit)
+          tmux set-option -t lazygit detach-on-destroy off
+        fi
+      '
+
+      bind -n C-\\ run-shell '
+        session_name="$(tmux display-message -p -F "#{session_name}")"
+        if [ "$session_name" = "popup" ]; then
+          tmux detach-client
+        elif [ "$session_name" = "lazygit" ]; then
+          tmux switch-client -l
+        else
+          tmux popup -d "#{pane_current_path}" -xC -yC -w92% -h92% -E "tmux attach -t popup || tmux new -s popup"
+        fi
+      '
 
       set -sg escape-time 0
 
@@ -160,7 +183,11 @@ let name = "pbharrell";
       bind r source-file ~/.tmux.conf
 
       # Binding to open tmux in command line editor (vim/nvim)
-      bind-key v run-shell "editor-tmux-output.sh"
+      bind-key v run-shell '
+        file=$(mktemp).sh
+        tmux capture-pane -pS -32768 > "$file"
+        tmux new-window "$EDITOR \"+ normal G \$\" \"$file\""
+      '
       '';
     };
 }

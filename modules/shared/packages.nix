@@ -7,7 +7,6 @@ with pkgs; [
   neofetch
   openssh
   pandoc
-  # python314python
   sqlite
   wget
   zip
@@ -37,4 +36,7 @@ with pkgs; [
   # Python packages
   python3
   virtualenv
+
+  # Go packages
+  go
 ]
