@@ -33,6 +33,9 @@ with pkgs; [
   nb
   lazygit
 
+  # C and C++
+  gcc
+
   # Python packages
   python3
   virtualenv
